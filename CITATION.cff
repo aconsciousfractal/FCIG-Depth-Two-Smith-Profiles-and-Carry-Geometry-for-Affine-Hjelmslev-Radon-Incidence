@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "Please cite the manuscript as below. The exact-arithmetic companion is MIT-licensed; the manuscript has the separate copyright boundary in LICENSE_SCOPE.md."
+title: "Affine Hjelmslev--Radon Smith Exact-Arithmetic Companion"
+type: software
+version: "0.2.0"
+authors:
+  - family-names: Babanskyy
+    given-names: Oleksiy
+    orcid: "https://orcid.org/0009-0001-6176-6208"
+repository-code: "https://github.com/aconsciousfractal/FCIG-Depth-Two-Smith-Profiles-and-Carry-Geometry-for-Affine-Hjelmslev-Radon-Incidence"
+license: MIT
+keywords:
+  - Smith-normal-form
+  - affine-Hjelmslev-geometry
+  - Radon-transform
+  - incidence-matrix
+  - residue-rings
+  - integer-lattices
+  - exact-arithmetic
+  - reproducibility
+abstract: >-
+  Exact-arithmetic companion for bounded Smith-profile, filtered-lattice and
+  hostile mutation cross-checks associated with the manuscript Depth-Two
+  Smith Profiles and Carry Geometry for Affine Hjelmslev--Radon Incidence.
+  The software does not replace the written all-prime proofs and makes no
+  novelty, priority or exhaustive-literature claim.
+preferred-citation:
+  type: article
+  title: "Depth-Two Smith Profiles and Carry Geometry for Affine Hjelmslev--Radon Incidence"
+  authors:
+    - family-names: Babanskyy
+      given-names: Oleksiy
+      orcid: "https://orcid.org/0009-0001-6176-6208"
+  year: 2026

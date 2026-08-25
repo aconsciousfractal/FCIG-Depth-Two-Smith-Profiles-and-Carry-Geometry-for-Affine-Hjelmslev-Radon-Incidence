@@ -1,0 +1,5 @@
+$pdf_mode = 4;
+$bibtex_use = 2;
+$jobname = 'Depth-Two-Smith-Profiles-and-Carry-Geometry-for-Affine-Hjelmslev-Radon-Incidence';
+$max_repeat = 8;
+$recorder = 1;
