@@ -40,6 +40,7 @@ ALLOWED_PATHS = {
     ".gitattributes",
     ".gitignore",
     "ACCESSIBILITY.md",
+    "AI_USE.md",
     "CITATION.cff",
     "LICENSE",
     "LICENSE_SCOPE.md",
@@ -200,9 +201,7 @@ PUBLIC_REPOSITORY_URL = (
     "FCIG-Depth-Two-Smith-Profiles-and-Carry-Geometry-for-"
     "Affine-Hjelmslev-Radon-Incidence"
 )
-PUBLIC_ROOT_MESSAGE = "Publish paper and reproducibility companion"
 PUBLIC_AUTHOR_NAME = "Oleksiy Babanskyy"
-PUBLIC_NOREPLY_EMAIL = "aconsciousfractal@users.noreply.github.com"
 VISIBLE_GOVERNANCE_CODE = re.compile(
     r"\b(?:[A-Z]-[A-Z][0-9]+|FIG-[0-9]+|TAB-[0-9]+|P[0-9]{2,4})\b"
 )
@@ -440,6 +439,30 @@ def _check_scientific_locks(root: Path = ROOT) -> None:
     for lock in public_template_locks:
         if lock not in manuscript:
             raise AssertionError(f"public manuscript template drift: {lock}")
+    ai_disclosure = native_path(root / "AI_USE.md").read_text(encoding="utf-8")
+    normalized_manuscript = " ".join(manuscript.split())
+    normalized_ai_disclosure = " ".join(ai_disclosure.split())
+    ai_disclosure_locks = (
+        "OpenAI Codex",
+        "GPT-5.6 Sol",
+        "generated the central mathematical development",
+        "takes responsibility for the final content",
+        "not human peer review or independent expert verification",
+    )
+    for lock in ai_disclosure_locks:
+        if (
+            lock not in normalized_manuscript
+            or lock not in normalized_ai_disclosure
+        ):
+            raise AssertionError(f"AI-use disclosure drift: {lock}")
+    if "The theorem includes $p=5$" not in normalized_manuscript:
+        raise AssertionError("p=5 theorem/computation boundary drift")
+    for obsolete in (
+        "no result at\n$(p,n)=(5,2)$",
+        "no $(5,2)$ result",
+    ):
+        if obsolete in normalized_manuscript:
+            raise AssertionError("obsolete p=5 exclusion in manuscript")
     if "\\documentclass{amsart}" in manuscript or "\\stmtid" in manuscript:
         raise AssertionError("private or running-head manuscript template")
     if re.search(r"(?:FIG|TAB)-[0-9]+", manuscript):
@@ -733,7 +756,13 @@ def inspect_pdf(path: Path) -> dict[str, object]:
     ]
     if author_pages != [1]:
         raise AssertionError(f"author must appear only on PDF page 1: {author_pages}")
-    for token in ("Keywords:", "MSC 2020:", "github.com/aconsciousfractal"):
+    for token in (
+        "Keywords:",
+        "MSC 2020:",
+        "github.com/aconsciousfractal",
+        "AI-use disclosure and author responsibility",
+        "GPT-5.6 Sol",
+    ):
         if token not in full_text:
             raise AssertionError(f"visible PDF front matter missing: {token}")
     if "24 August 2026" in full_text:
@@ -762,77 +791,23 @@ def _git_output(root: Path, *arguments: str) -> str:
     return git_output(root, *arguments)
 
 
-def _detached_review_boundary(root: Path, commit_count: int) -> str:
-    """Reject author-side review tags and retain evidence outside the root."""
-
-    tags = [row for row in _git_output(root, "tag", "--list").splitlines() if row]
-    if tags:
-        raise AssertionError(
-            "Git tags cannot establish independent-review evidence"
-        )
-    if commit_count != 1:
-        raise AssertionError(
-            "each release candidate must be a fresh one-commit parentless root"
-        )
-    return "DETACHED_REVIEWER_REPORT_AND_RECEIPT_REQUIRED_FOR_EXTERNAL_CREDIT"
-
-
 def inspect_git_history(root: Path = ROOT) -> dict[str, object]:
-    """Authenticate the checked-out tree and its clean linear ancestry."""
+    """Bind content verification to a clean checkout of the current HEAD.
+
+    The content check is independent of branching policy: ordinary corrective
+    descendants, merges, tags, remotes and detached CI checkouts are valid.
+    Local mechanisms that can silently rewrite object lookup remain forbidden.
+    """
 
     ensure_git_repository_safety(root=root)
     top_level = _git_output(root, "rev-parse", "--show-toplevel")
     if Path(top_level).resolve() != root.resolve():
-        raise AssertionError("candidate is not the Git toplevel")
-    if _git_output(root, "rev-parse", "--is-shallow-repository") != "false":
-        raise AssertionError("shallow Git history cannot certify the public root")
+        raise AssertionError("repository root is not the Git toplevel")
 
-    head = _git_output(root, "rev-parse", "HEAD")
-    commits = [row for row in _git_output(root, "rev-list", "HEAD").splitlines() if row]
-    commit_count = len(commits)
-    roots = [
-        row
-        for row in _git_output(root, "rev-list", "--max-parents=0", "HEAD").splitlines()
-        if row
-    ]
-    if len(roots) != 1:
-        raise AssertionError("public ancestry must have exactly one root")
-    root_commit = roots[0]
-    if _git_output(root, "rev-list", "--min-parents=2", "HEAD"):
-        raise AssertionError("public ancestry must be linear and merge-free")
-    root_row = _git_output(root, "rev-list", "--parents", "-n", "1", root_commit)
-    if root_row.split() != [root_commit]:
-        raise AssertionError("public root commit is not parentless")
-    if _git_output(root, "log", "-1", "--format=%s", root_commit) != PUBLIC_ROOT_MESSAGE:
-        raise AssertionError("public root commit message drift")
-
-    identity = _git_output(
-        root,
-        "log",
-        "-1",
-        "--format=%an%x00%ae%x00%cn%x00%ce",
-        root_commit,
-    ).split("\x00")
-    expected_identity = [
-        PUBLIC_AUTHOR_NAME,
-        PUBLIC_NOREPLY_EMAIL,
-        PUBLIC_AUTHOR_NAME,
-        PUBLIC_NOREPLY_EMAIL,
-    ]
-    if identity != expected_identity:
-        raise AssertionError(f"public root identity drift: {identity}")
-
+    head = _git_output(root, "rev-parse", "--verify", "HEAD^{commit}")
+    tree = _git_output(root, "rev-parse", "HEAD^{tree}")
     if _git_output(root, "replace", "-l"):
         raise AssertionError("Git replace refs are not allowed")
-    if _git_output(root, "remote"):
-        raise AssertionError("release candidate must not contain a Git remote")
-    for row in _git_output(
-        root, "log", "--format=%an%x00%ae%x00%cn%x00%ce", "HEAD"
-    ).splitlines():
-        if row.split("\x00") != expected_identity:
-            raise AssertionError("public ancestry identity drift")
-    for subject in _git_output(root, "log", "--format=%s", "HEAD").splitlines():
-        _scan_hygiene_text(subject, "Git commit subject")
 
     for administrative_path in ("info/grafts", "objects/info/alternates"):
         relative = _git_output(root, "rev-parse", "--git-path", administrative_path)
@@ -842,62 +817,46 @@ def inspect_git_history(root: Path = ROOT) -> dict[str, object]:
         if path.exists() and path.stat().st_size:
             raise AssertionError(f"Git administrative override: {administrative_path}")
 
-    tree = _git_output(root, "rev-parse", "HEAD^{tree}")
-    review_evidence = _detached_review_boundary(root, commit_count)
-
-    for row in _git_output(
-        root, "for-each-ref", "--format=%(refname)%00%(objectname)"
-    ).splitlines():
-        if not row:
-            continue
-        refname, object_name = row.split("\x00", maxsplit=1)
-        if refname.startswith("refs/tags/"):
-            continue
-        if object_name != head:
-            raise AssertionError(f"ref does not identify the reviewed HEAD: {refname}")
-
-    reachable = set(commits)
-    reflog_rows = _git_output(
-        root, "reflog", "show", "--all", "--format=%H%x00%gs"
-    ).splitlines()
-    for row in reflog_rows:
-        if not row:
-            continue
-        object_name, message = row.split("\x00", maxsplit=1)
-        if object_name not in reachable:
-            raise AssertionError("reflog retains an object outside reviewed ancestry")
-        if re.search(r"(?i)\b(?:P[0-9]{2,4}|RC[0-9]+)\b|gmail\.com", message):
-            raise AssertionError("reflog retains private lifecycle or email data")
-
-    fsck = _run_git(
-        root,
-        "fsck",
-        "--full",
-        "--strict",
-        "--no-reflogs",
-        "--unreachable",
-        "--no-progress",
-    )
-    fsck_text = "\n".join((fsck.stdout, fsck.stderr)).strip()
-    if fsck.returncode != 0:
-        raise AssertionError(f"Git object database failed fsck: {fsck_text}")
-    if re.search(r"(?i)\b(?:unreachable|dangling)\b", fsck_text):
-        raise AssertionError(f"unreachable Git object: {fsck_text}")
+    tracked = {
+        PurePosixPath(row).as_posix()
+        for row in _git_output(root, "ls-files").splitlines()
+        if row
+    }
+    if tracked != ALLOWED_PATHS:
+        raise AssertionError(
+            "tracked path census drift: "
+            f"missing={sorted(ALLOWED_PATHS - tracked)}, "
+            f"extra={sorted(tracked - ALLOWED_PATHS)}"
+        )
 
     status = _git_output(root, "status", "--porcelain=v1", "--untracked-files=all")
     if status:
         raise AssertionError(f"Git worktree is not clean: {status}")
 
+    fsck = _run_git(
+        root,
+        "fsck",
+        "--strict",
+        "--connectivity-only",
+        "--no-progress",
+        "HEAD",
+    )
+    fsck_text = "\n".join((fsck.stdout, fsck.stderr)).strip()
+    if fsck.returncode != 0:
+        raise AssertionError(f"Git object connectivity failed: {fsck_text}")
+
+    commit_count = len(
+        [row for row in _git_output(root, "rev-list", "HEAD").splitlines() if row]
+    )
+
     return {
         "commit": head,
         "tree": tree,
         "commits": commit_count,
-        "root_commit": root_commit,
-        "review_evidence": review_evidence,
-        "author_email": PUBLIC_NOREPLY_EMAIL,
+        "tracked_files": len(tracked),
+        "shallow": _git_output(root, "rev-parse", "--is-shallow-repository")
+        == "true",
         "git_executable_sha256": _sha256(trusted_git_executable()),
-        "reflog_entries": len(reflog_rows),
-        "unreachable_objects": 0,
     }
 
 

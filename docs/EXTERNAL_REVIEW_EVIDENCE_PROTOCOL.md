@@ -59,6 +59,7 @@ findings. A syntactically valid `HOLD` remains a review HOLD.
 
 ## Tags and descendants
 
-Every candidate is a fresh one-commit parentless root. Tags and corrective
-descendants are rejected. A later candidate must be materialized in a new
-object database and receive its own detached report and receipt.
+Tags, corrective descendants and other ordinary Git topology do not establish
+review credit and do not invalidate content verification. Every review report
+and receipt must bind the exact commit and tree actually examined. Any later
+candidate therefore needs its own exact detached report and receipt.

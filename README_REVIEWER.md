@@ -32,7 +32,7 @@ Python/Git variables and supplies a minimal subprocess environment.
   tests/test_affine_hjelmslev_radon_smith.py tests/test_release_assurance.py
 ```
 
-The tests reject invalid prime types, the reserved `(5,2)` target, strict
+The tests reject invalid prime types, the reserved `(5,2)` computational target, strict
 sublattices, undeclared paths, reparse points, alternate streams, active PDF
 content (including post-EOF and orphan/object-stream payloads), visible
 lifecycle codes, an incorrect paper template, ambient Git redirection,
@@ -73,6 +73,8 @@ assert a closed all-depth Smith formula.
   arguments.
 - [docs/REPRODUCIBILITY_BOUNDARY.md](docs/REPRODUCIBILITY_BOUNDARY.md)
   identifies which outputs are recomputed and why bounded replay is not proof.
+- [AI_USE.md](AI_USE.md) records the model's mathematical role and the
+  author's responsibility for the final content.
 - [docs/EXTERNAL_REVIEW_EVIDENCE_PROTOCOL.md](docs/EXTERNAL_REVIEW_EVIDENCE_PROTOCOL.md)
   specifies the detached report/receipt pair and the provenance boundary.
 - [LICENSE_SCOPE.md](LICENSE_SCOPE.md) separates retained manuscript copyright
@@ -105,7 +107,8 @@ an input to the evidence verifier.
 
 ## Explicit exclusions
 
-- no computation or result at `(p,n)=(5,2)`;
+- no full-matrix companion computation or finite certificate at
+  `(p,n)=(5,2)`; the uniform theorem itself includes `p=5`;
 - no closed Smith profile at arbitrary depth;
 - no projective-to-affine incidence-matrix identification;
 - no finite-computation proof of an all-prime theorem;

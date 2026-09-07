@@ -134,8 +134,11 @@ belong to Weber--K\"unzer's cyclic Wedderburn calculation
 affine two-chart assembly, its cross block, and the geometric carry.
 
 The proofs below establish the stated results.  The finite computations listed in
-\cref{sec:S09} are bounded computational cross-checks only.  In particular, no result at
-$(p,n)=(5,2)$ is reported and no unexecuted experimental route is used.
+\cref{sec:S09} are bounded computational cross-checks only.  The theorem
+includes $p=5$.  The companion does not execute the memory-intensive
+full-matrix check at $(p,n)=(5,2)$; this computational resource boundary is
+not a mathematical exception and is not used in the proof.  No unexecuted
+experimental route is used.
 The bounded source search described in \cref{sec:S02,sec:S10} is not an
 exhaustive literature search.  Exact text and conventions for
 Landjev~2017 and Bajalan--Landjev--Rousseva~2023 were unavailable; their
@@ -1445,9 +1448,12 @@ text and conventions for \cite{LAN17,BLR23} were unavailable; no projective
 matrix is identified with $B_2$, no modular rank is promoted to an integer
 Smith profile, and no originality or priority conclusion is drawn.  The
 software reproduces closed exact controls, rejects typed and lattice
-mutations, and evaluates the full-size companion construction.  It is
-bounded computational cross-checking, not a substitute for any all-parameter proof; no $(5,2)$ result or
-unexecuted generic-orbit experiment enters this manuscript.
+mutations, and evaluates the shipped full-size companion constructions.  It
+is bounded computational cross-checking, not a substitute for any
+all-parameter proof.  The uniform theorem includes $p=5$, while the
+memory-intensive full-matrix companion check at $(p,n)=(5,2)$ is deliberately
+not executed or reported.  No unexecuted generic-orbit experiment enters
+this manuscript.
 
 \section{Reproducibility and companion interface}\label{sec:S10}
 
@@ -1470,7 +1476,8 @@ Layer & Reproduced object & Evidentiary boundary\\
 Exact controls & closed Smith profiles and index identities & bounded
 arithmetic cross-checks only; no finite extrapolation\\
 Hostile tests & prime types, lattice equalities, and fail-closed boundaries &
-rejects invalid primes, strict-sublattice mutations, and the reserved target\\
+rejects invalid primes, strict-sublattice mutations, and the reserved
+full-matrix target\\
 Full-size companion & filtered image lattices and carry transport & exact
 supporting realization on fixed geometries; no finite extrapolation or
 compression claim\\
@@ -1693,6 +1700,18 @@ augmentation line.
 Therefore $u_2=1$.  Substitution in \eqref{eq:K-from-mu} gives the stated
 profiles of $\mathcal K_2$.
 \end{proof}
+
+\section*{AI-use disclosure and author responsibility}
+
+Under the author's direction, OpenAI Codex, using the GPT-5.6 Sol model,
+generated the central mathematical development, including the all-prime
+depth-two Smith profile and the transfer-and-carry analysis, and assisted
+with the exact companion software and manuscript.  The author selected the
+research direction, challenged and checked the derivations and outputs, set
+the public boundaries, and takes responsibility for the final content.
+Same-workflow machine reviews are not human peer review or independent expert
+verification; the repository's \path{AI_USE.md} records the detailed
+provenance.
 
 \printbibliography
 

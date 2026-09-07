@@ -32,9 +32,11 @@ for `(2,3)`.
 ## Limits
 
 The finite cases are mutation-sensitive cross-checks, not extrapolation to all
-primes or all depths. The reserved `(5,2)` pair is rejected before geometry
-construction and is neither computed nor reported. The package makes no
-compression, novelty, priority or source-completeness claim.
+primes or all depths. The all-prime theorem includes `p=5`. Only the
+memory-intensive full-matrix companion computation at `(p,n)=(5,2)` is
+rejected before geometry construction and is neither computed nor reported.
+The package makes no compression, novelty, priority or source-completeness
+claim.
 
 The source manifest authenticates environment-independent bytes. The release
 manifest separately authenticates the compiled PDF because TeX output can

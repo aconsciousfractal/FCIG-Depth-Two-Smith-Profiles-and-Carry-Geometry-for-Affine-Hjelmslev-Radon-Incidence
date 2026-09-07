@@ -389,7 +389,7 @@ def test_release_checker_rejects_malformed_tex_tokens(
     assert diagnostic in result.stderr
 
 
-def test_release_checker_rejects_every_descendant(
+def test_release_checker_accepts_a_linear_successor(
     tmp_path: Path,
 ) -> None:
     candidate = _copy_candidate(tmp_path)
@@ -402,11 +402,11 @@ def test_release_checker_rejects_every_descendant(
         check=True,
     )
     result = _run_release(candidate)
-    assert result.returncode != 0
-    assert "fresh one-commit parentless root" in result.stderr
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "RELEASE PASS" in result.stdout
 
 
-def test_release_checker_rejects_author_created_review_tag(tmp_path: Path) -> None:
+def test_release_checker_accepts_tags_and_remotes(tmp_path: Path) -> None:
     candidate = _copy_candidate(tmp_path)
     environment = _public_git_environment()
     subprocess.run(
@@ -417,12 +417,20 @@ def test_release_checker_rejects_author_created_review_tag(tmp_path: Path) -> No
         capture_output=True,
         check=True,
     )
+    subprocess.run(
+        ["git", "remote", "add", "origin", "https://example.com/repository"],
+        cwd=candidate,
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        check=True,
+    )
     result = _run_release(candidate)
-    assert result.returncode != 0
-    assert "Git tags cannot establish independent-review evidence" in result.stderr
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "RELEASE PASS" in result.stdout
 
 
-def test_release_checker_rejects_non_noreply_root_identity(tmp_path: Path) -> None:
+def test_release_checker_treats_commit_identity_as_metadata(tmp_path: Path) -> None:
     candidate = _copy_candidate(tmp_path)
     environment = os.environ.copy()
     environment.update(
@@ -442,11 +450,11 @@ def test_release_checker_rejects_non_noreply_root_identity(tmp_path: Path) -> No
         check=True,
     )
     result = _run_release(candidate)
-    assert result.returncode != 0
-    assert "root identity drift" in result.stderr
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "RELEASE PASS" in result.stdout
 
 
-def test_release_checker_rejects_an_unreachable_git_object(tmp_path: Path) -> None:
+def test_release_checker_ignores_unreachable_objects_outside_head(tmp_path: Path) -> None:
     candidate = _copy_candidate(tmp_path)
     subprocess.run(
         ["git", "hash-object", "-w", "--stdin"],
@@ -456,8 +464,8 @@ def test_release_checker_rejects_an_unreachable_git_object(tmp_path: Path) -> No
         check=True,
     )
     result = _run_release(candidate)
-    assert result.returncode != 0
-    assert "unreachable Git object" in result.stderr
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "RELEASE PASS" in result.stdout
 
 
 @pytest.mark.parametrize(

@@ -77,11 +77,13 @@ def _validate_prime(p: int) -> None:
 
 
 def reject_reserved_target(p: int, n: int) -> None:
-    """Validate ``p`` and reject the deliberately unavailable target."""
+    """Validate ``p`` and reject the unavailable full-matrix check."""
 
     _validate_prime(p)
     if (p, n) == (5, 2):
-        raise AssertionError("reserved (5,2) target is intentionally unavailable")
+        raise AssertionError(
+            "reserved (5,2) computational target is intentionally unavailable"
+        )
 
 
 def _phi_prime_power(p: int, n: int) -> int:

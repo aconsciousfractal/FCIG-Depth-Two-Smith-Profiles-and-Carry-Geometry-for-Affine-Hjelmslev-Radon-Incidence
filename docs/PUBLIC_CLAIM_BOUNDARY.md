@@ -19,7 +19,8 @@ This package does not claim:
 - novelty, firstness or priority for any statement;
 - a literature-wide or exhaustive source search;
 - a closed Smith profile at every depth;
-- any result at `(p,n)=(5,2)`;
+- a full-matrix companion computation or finite certificate at
+  `(p,n)=(5,2)`; the all-prime theorem itself includes `p=5`;
 - that finite calculations prove an all-prime theorem;
 - that the two-chart carry admits a general compression theorem;
 - that adjacent projective modular-rank results determine the affine integer
@@ -36,3 +37,6 @@ appendix, not the program, proves their all-prime law.
 
 Readers should cite the paper for mathematical statements and describe the
 software only as exact reproducibility and mutation-sensitive cross-checking.
+
+The mathematical-development provenance and author-responsibility boundary
+are stated in `AI_USE.md` and in the paper itself.

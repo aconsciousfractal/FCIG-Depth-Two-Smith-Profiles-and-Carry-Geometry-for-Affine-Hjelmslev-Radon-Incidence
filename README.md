@@ -7,7 +7,8 @@ Companion repository for the paper
 > Oleksiy Babanskyy, 2026.
 
 Paper: [PDF](paper/Depth-Two-Smith-Profiles-and-Carry-Geometry-for-Affine-Hjelmslev-Radon-Incidence.pdf) ·
-[LaTeX source](paper/main.tex) · [bibliography](paper/references.bib)
+[LaTeX source](paper/main.tex) · [bibliography](paper/references.bib) ·
+[AI-use disclosure](AI_USE.md)
 
 The paper studies the integer point--line incidence matrix of the affine
 plane over `Z/p^n Z`, using primitive normal directions modulo units. At depth
@@ -46,8 +47,10 @@ The standalone exact-arithmetic companion reconstructs:
   `(2,3)`;
 - invalid-prime, strict-sublattice and reserved-target hostile cases.
 
-The pair `(5,2)` is intentionally rejected before geometry construction. No
-result for that pair is shipped.
+The theorem covers `p=5`. The companion intentionally rejects the
+memory-intensive full-matrix computation at `(p,n)=(5,2)` before geometry
+construction; no such finite certificate is shipped, and this computational
+resource boundary is not a mathematical exception.
 
 ## Quick verification
 
@@ -90,10 +93,11 @@ exact integrity layers.
 The release checker also verifies the public article template, A4 geometry,
 document language, visible front matter, exactly one terminal PDF EOF marker,
 the complete PDF cross-reference/object-stream census, absence of lifecycle
-codes, a one-root-commit untagged Git history with a GitHub `noreply` identity,
-and an object database with no unreachable objects. Authoritative Git calls
-use the recorded executable, explicit Git/worktree paths, replacement-free
-semantics and a fixed sanitized environment.
+codes, the tracked path census, the clean tree at the current Git `HEAD`, and
+Git object connectivity. Ordinary corrective commits, merges, tags, remotes
+and detached CI checkouts do not change this content check. Authoritative Git
+calls use the recorded executable, explicit Git/worktree paths,
+replacement-free semantics and a fixed sanitized environment.
 
 The Python hygiene layer is deliberately bounded. It evaluates constant
 string/byte expressions and rejects a documented set of dynamic reconstruction
@@ -108,6 +112,7 @@ program obfuscation; the exact scope and hostile mutations are documented in
 - Dependency notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - Accessibility status: [ACCESSIBILITY.md](ACCESSIBILITY.md).
 - Claim boundary: [docs/PUBLIC_CLAIM_BOUNDARY.md](docs/PUBLIC_CLAIM_BOUNDARY.md).
+- AI-use disclosure and author responsibility: [AI_USE.md](AI_USE.md).
 - Detached review evidence: [docs/EXTERNAL_REVIEW_EVIDENCE_PROTOCOL.md](docs/EXTERNAL_REVIEW_EVIDENCE_PROTOCOL.md).
 
 Copyright in the manuscript is retained by Oleksiy Babanskyy. The MIT licence

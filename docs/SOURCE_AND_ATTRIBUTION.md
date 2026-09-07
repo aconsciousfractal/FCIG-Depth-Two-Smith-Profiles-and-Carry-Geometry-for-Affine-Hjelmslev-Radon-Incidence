@@ -37,6 +37,15 @@ clipped-line carry and the complete depth-two affine integer profile are
 proved in the manuscript. The code reconstructs finite controls for these
 objects but is not the proof.
 
+## AI-use provenance
+
+Under the author's direction, OpenAI Codex using GPT-5.6 Sol generated the
+central mathematical development, exact companion software and manuscript
+drafting described more fully in `AI_USE.md`. The author selected the research
+direction, checked the derivations and outputs, set the public boundaries and
+takes responsibility for the final content. Same-workflow machine reviews are
+not represented as human peer review or independent expert verification.
+
 ## Stable locators
 
 DOIs and stable public locators are recorded in `paper/references.bib`. Entries with
