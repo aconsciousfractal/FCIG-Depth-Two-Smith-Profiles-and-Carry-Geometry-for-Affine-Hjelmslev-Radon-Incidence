@@ -97,6 +97,18 @@ def _git(root: Path, *arguments: str, input_text: str | None = None) -> str:
     return result.stdout.strip()
 
 
+def _replace_digest_row(path: Path, relative: str, digest: str) -> None:
+    rows = path.read_text(encoding="utf-8").splitlines()
+    replacements = 0
+    for index, row in enumerate(rows):
+        _old_digest, row_relative = row.split(maxsplit=1)
+        if row_relative == relative:
+            rows[index] = f"{digest}  {relative}"
+            replacements += 1
+    assert replacements == 1
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8", newline="\n")
+
+
 def _make_lure(path: Path) -> Path:
     path.mkdir()
     _git(path, "init", "-b", "main")
@@ -162,6 +174,51 @@ def test_local_git_administrative_redirect_is_rejected(
     result = _run_target(candidate, "scripts/check_release.py")
     assert result.returncode != 0
     assert administrative_path in result.stderr
+
+
+@pytest.mark.parametrize("flag", ["--assume-unchanged", "--skip-worktree"])
+def test_release_checker_rejects_hidden_index_flags(
+    tmp_path: Path, flag: str,
+) -> None:
+    candidate = _copy_candidate(tmp_path)
+    _git(candidate, "update-index", flag, "README.md")
+    assert _git(
+        candidate, "status", "--porcelain=v1", "--untracked-files=all",
+    ) == ""
+    result = _run_target(candidate, "scripts/check_release.py")
+    assert result.returncode != 0
+    assert "hidden Git index flag" in result.stderr
+
+
+def test_release_checker_rejects_coherently_rehashed_hidden_worktree(
+    tmp_path: Path,
+) -> None:
+    candidate = _copy_candidate(tmp_path)
+    hidden = ("README.md", "MANIFEST_SHA256.txt", "RELEASE_SHA256.txt")
+    for relative in hidden:
+        _git(candidate, "update-index", "--assume-unchanged", relative)
+
+    readme = candidate / "README.md"
+    with readme.open("a", encoding="utf-8", newline="") as handle:
+        handle.write("\nSynthetic hidden content.\n")
+    manifest = candidate / "MANIFEST_SHA256.txt"
+    _replace_digest_row(
+        manifest,
+        "README.md",
+        hashlib.sha256(readme.read_bytes()).hexdigest().upper(),
+    )
+    release = candidate / "RELEASE_SHA256.txt"
+    _replace_digest_row(
+        release,
+        "MANIFEST_SHA256.txt",
+        hashlib.sha256(manifest.read_bytes()).hexdigest().upper(),
+    )
+    assert _git(
+        candidate, "status", "--porcelain=v1", "--untracked-files=all",
+    ) == ""
+    result = _run_target(candidate, "scripts/check_release.py")
+    assert result.returncode != 0
+    assert "working-tree bytes differ from HEAD blob" in result.stderr
 
 
 def _last_startxref(payload: bytes) -> int:

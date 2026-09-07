@@ -791,6 +791,64 @@ def _git_output(root: Path, *arguments: str) -> str:
     return git_output(root, *arguments)
 
 
+def _head_tree_entries(root: Path) -> dict[str, tuple[str, str, str]]:
+    """Return canonical ``HEAD`` mode, type and object identities by path."""
+
+    entries: dict[str, tuple[str, str, str]] = {}
+    raw = _git_output(root, "ls-tree", "-r", "-z", "--full-tree", "HEAD")
+    for record in raw.split("\0"):
+        if not record:
+            continue
+        metadata, separator, relative = record.partition("\t")
+        fields = metadata.split()
+        if not separator or len(fields) != 3:
+            raise AssertionError("malformed HEAD tree entry")
+        mode, object_type, object_name = fields
+        canonical = PurePosixPath(relative).as_posix()
+        if canonical != relative or relative in entries:
+            raise AssertionError(f"noncanonical or duplicate HEAD path: {relative}")
+        entries[relative] = (mode, object_type, object_name)
+    return entries
+
+
+def _index_entries(root: Path) -> dict[str, tuple[str, str]]:
+    """Return stage-zero index mode and object identities by path."""
+
+    entries: dict[str, tuple[str, str]] = {}
+    raw = _git_output(root, "ls-files", "--stage", "-z")
+    for record in raw.split("\0"):
+        if not record:
+            continue
+        metadata, separator, relative = record.partition("\t")
+        fields = metadata.split()
+        if not separator or len(fields) != 3:
+            raise AssertionError("malformed Git index entry")
+        mode, object_name, stage = fields
+        if stage != "0":
+            raise AssertionError(f"non-stage-zero Git index entry: {relative}")
+        canonical = PurePosixPath(relative).as_posix()
+        if canonical != relative or relative in entries:
+            raise AssertionError(f"noncanonical or duplicate index path: {relative}")
+        entries[relative] = (mode, object_name)
+    return entries
+
+
+def _hidden_index_flags(root: Path) -> dict[str, str]:
+    """Return paths not carrying Git's ordinary cached-file marker ``H``."""
+
+    flagged: dict[str, str] = {}
+    raw = _git_output(root, "ls-files", "-v", "-z")
+    for record in raw.split("\0"):
+        if not record:
+            continue
+        if len(record) < 3 or record[1] != " ":
+            raise AssertionError("malformed Git index flag entry")
+        marker, relative = record[0], record[2:]
+        if marker != "H":
+            flagged[relative] = marker
+    return flagged
+
+
 def inspect_git_history(root: Path = ROOT) -> dict[str, object]:
     """Bind content verification to a clean checkout of the current HEAD.
 
@@ -817,17 +875,41 @@ def inspect_git_history(root: Path = ROOT) -> dict[str, object]:
         if path.exists() and path.stat().st_size:
             raise AssertionError(f"Git administrative override: {administrative_path}")
 
-    tracked = {
-        PurePosixPath(row).as_posix()
-        for row in _git_output(root, "ls-files").splitlines()
-        if row
-    }
+    head_entries = _head_tree_entries(root)
+    tracked = set(head_entries)
     if tracked != ALLOWED_PATHS:
         raise AssertionError(
-            "tracked path census drift: "
+            "HEAD path census drift: "
             f"missing={sorted(ALLOWED_PATHS - tracked)}, "
             f"extra={sorted(tracked - ALLOWED_PATHS)}"
         )
+    for relative, (mode, object_type, _object_name) in head_entries.items():
+        if mode != "100644" or object_type != "blob":
+            raise AssertionError(
+                f"HEAD path is not a regular non-executable blob: {relative} "
+                f"({mode} {object_type})"
+            )
+
+    index_entries = _index_entries(root)
+    expected_index = {
+        relative: (mode, object_name)
+        for relative, (mode, _object_type, object_name) in head_entries.items()
+    }
+    if index_entries != expected_index:
+        raise AssertionError("Git index does not exactly match the HEAD tree")
+
+    for relative, (_mode, _object_type, object_name) in head_entries.items():
+        worktree_object = _git_output(
+            root, "hash-object", "--no-filters", "--", relative,
+        )
+        if worktree_object != object_name:
+            raise AssertionError(
+                f"working-tree bytes differ from HEAD blob: {relative}"
+            )
+
+    hidden_flags = _hidden_index_flags(root)
+    if hidden_flags:
+        raise AssertionError(f"hidden Git index flag: {hidden_flags}")
 
     status = _git_output(root, "status", "--porcelain=v1", "--untracked-files=all")
     if status:
@@ -854,6 +936,8 @@ def inspect_git_history(root: Path = ROOT) -> dict[str, object]:
         "tree": tree,
         "commits": commit_count,
         "tracked_files": len(tracked),
+        "head_worktree_blobs": len(head_entries),
+        "hidden_index_flags": 0,
         "shallow": _git_output(root, "rev-parse", "--is-shallow-repository")
         == "true",
         "git_executable_sha256": _sha256(trusted_git_executable()),

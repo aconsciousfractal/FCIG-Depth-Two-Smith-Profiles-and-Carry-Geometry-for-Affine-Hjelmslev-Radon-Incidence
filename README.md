@@ -93,11 +93,13 @@ exact integrity layers.
 The release checker also verifies the public article template, A4 geometry,
 document language, visible front matter, exactly one terminal PDF EOF marker,
 the complete PDF cross-reference/object-stream census, absence of lifecycle
-codes, the tracked path census, the clean tree at the current Git `HEAD`, and
-Git object connectivity. Ordinary corrective commits, merges, tags, remotes
-and detached CI checkouts do not change this content check. Authoritative Git
-calls use the recorded executable, explicit Git/worktree paths,
-replacement-free semantics and a fixed sanitized environment.
+codes, the regular-blob path census at Git `HEAD`, exact agreement of the
+stage-zero index and working-tree bytes with that tree, absence of hidden
+`assume-unchanged` or `skip-worktree` flags, and Git object connectivity.
+Ordinary corrective commits, merges, tags, remotes and detached CI checkouts
+do not change this content check. Authoritative Git calls use the recorded
+executable, explicit Git/worktree paths, replacement-free semantics and a
+fixed sanitized environment.
 
 The Python hygiene layer is deliberately bounded. It evaluates constant
 string/byte expressions and rejects a documented set of dynamic reconstruction

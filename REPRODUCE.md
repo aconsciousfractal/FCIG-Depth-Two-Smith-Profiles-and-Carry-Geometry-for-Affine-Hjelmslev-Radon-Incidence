@@ -132,9 +132,11 @@ The release checker rejects undeclared files and directories, symlinks,
 reparse points, NTFS alternate streams, local-path residue, active or local
 PDF actions, visible lifecycle codes, non-A4 output, missing language/front
 matter, a nonpublic paper template, a dirty checkout, grafts, replace refs and
-alternate object databases. It binds the result to the current commit, tree
-and tracked path census while allowing ordinary corrective commits, merges,
-tags, remotes and detached CI checkouts.
+alternate object databases. It obtains path, mode and blob identities from the
+current `HEAD`, requires an identical stage-zero index, rejects hidden
+`assume-unchanged` and `skip-worktree` flags, and hashes every working-tree
+file as a raw Git blob before accepting byte identity. Ordinary corrective
+commits, merges, tags, remotes and detached CI checkouts remain allowed.
 
 Git is invoked by its recorded absolute path with `--no-replace-objects`,
 explicit `--git-dir` and `--work-tree` bindings, and a fixed six-key Git

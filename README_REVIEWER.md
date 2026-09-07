@@ -37,7 +37,8 @@ sublattices, undeclared paths, reparse points, alternate streams, active PDF
 content (including post-EOF and orphan/object-stream payloads), visible
 lifecycle codes, an incorrect paper template, ambient Git redirection,
 replace/graft/alternate-object rewrites, bounded dynamic Python
-reconstruction, synthetic review elevation and a nonclean Git history. They
+reconstruction, synthetic review elevation, hidden index flags and any
+HEAD--index--working-tree byte mismatch. They
 also check both scaled top-relation products in all three public cases and one
 explicit high--high carry coordinate. The optimized pytest command in
 [REPRODUCE.md](REPRODUCE.md) is a compatibility smoke test, not an assurance
